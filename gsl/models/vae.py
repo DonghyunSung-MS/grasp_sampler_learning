@@ -68,7 +68,7 @@ class VAE(nn.Module):
         super().__init__()
 
         self.encoder = MLP([data_dim + condition_dim, 256, 256, latent_dim * 2])
-        self.decoder = MLP([latent_dim + condition_dim, 256, 256, data_dim])
+        self.decoder = MLP([latent_dim + condition_dim, 256, 256, data_dim], bn=False)
         self.base_dist = StandardNormal((latent_dim,))
 
     def forward(self, x, context):
