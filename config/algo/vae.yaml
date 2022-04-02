@@ -1,0 +1,6 @@
+method: "VAE"
+# model parameters
+beta: 1.0 # kl weight
+data_dim: 12
+condition_dim: 0
+latent_dim: 2

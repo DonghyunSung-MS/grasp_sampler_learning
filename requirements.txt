@@ -1,0 +1,9 @@
+torch
+pyvista
+roma
+trimesh[all]
+pytorch-lightning
+hydra
+h5py
+scipy
+numpy

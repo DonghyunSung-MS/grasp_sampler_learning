@@ -1,0 +1,12 @@
+method: "FLOW"
+
+# model parameters
+data_dim: 6
+condition_dim: 0
+latent_dim: 6
+num_flow: 8
+scale_fn_name: "sigmoidsoftplus"
+# scale_fn_name: "sigmoid"
+# scale_fn_name: "exp"
+# scale_fn_name: "softplus"
+# scale_fn_name: "tanh_exp"
