@@ -89,7 +89,7 @@ def train_each(config, object_name):
     loggers, callbacks = get_logger_and_callbacks(config, object_name)
 
     trainer = pl.Trainer(
-        logger=loggers,
+        # logger=loggers,
         log_every_n_steps=1,
         gpus=config.gpu,
         max_epochs=config.max_epoch,

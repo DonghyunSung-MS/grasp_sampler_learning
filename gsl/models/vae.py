@@ -24,9 +24,9 @@ def MLP(layers, act=nn.ReLU(inplace=True), bn=True):
 class VAEGraspNet(PLWrapper):
     def __init__(self, config: OmegaConf) -> None:
         super().__init__(config)
-        config = config.algo
-        self.net = VAE(config.data_dim, config.condition_dim, config.latent_dim)
-        self.beta = config.beta
+        algo = config.algo
+        self.net = VAE(algo.data_dim, algo.condition_dim, algo.latent_dim)
+        self.beta = algo.beta
         self.save_hyperparameters()
 
     def step_loss(self, batch_data):
@@ -61,7 +61,15 @@ class VAEGraspNet(PLWrapper):
             "recon_rot": rot_recon,
             "recon": recon_loss,
         }
+    def sample_grasp(self, num_samples, c=None):
+        return self.net.sample(num_samples, c)
 
+    def grasp_latent(self, x, c):
+        R = roma.unitquat_to_rotmat(x[..., 3:])
+        t = x[..., :3]
+        x = torch.cat([t, R.reshape(-1, 9)], -1)  # (B, 12)
+        
+        return self.net.to_latent(x, c)
 
 class VAE(nn.Module):
     def __init__(self, data_dim, condition_dim, latent_dim) -> None:
@@ -100,4 +108,17 @@ class VAE(nn.Module):
         else:
             assert num_samples.shape[0] == context.shape[0]
             x_hat = self.decoder(torch.cat([z, context], -1))
-        return x_hat, z
+        return x_hat
+
+    def to_latent(self, x, context):
+        if context is None:
+            mu_logvar = self.encoder(x)
+        else:
+            mu_logvar = self.encoder(torch.cat([x, context], -1))
+
+        mu, logvar = torch.chunk(mu_logvar, 2, -1)
+
+        # reparam MCMC
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std, device=mu.device)
+        return mu + eps * std

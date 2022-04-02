@@ -48,10 +48,12 @@ def read_grasps(grasp_path: Path, num_train, num_test):
     return train_grasp, eval_grasp, test_grasp
 
 
-def read_mesh(object_name):
+def read_all(object_name):
     pv_mesh = pv.read(ROOT / f"data/models/{object_name}/textured.obj")
     pv_tex = pv.read_texture(ROOT / f"data/models/{object_name}/texture_map.png")
-    return pv_mesh, pv_tex
+    data = h5py.File(ROOT / f"data/grasps/{object_name}/grasps.h5", "r")
+    poses = data["poses"][()]  # xyz, xyzw
+    return poses, pv_mesh, pv_tex
 
 
 class GraspOnly(Dataset):

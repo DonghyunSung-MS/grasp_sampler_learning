@@ -22,14 +22,14 @@ SCALE_FN = {
 class FlowGraspNet(PLWrapper):
     def __init__(self, config: OmegaConf):
         super().__init__(config)
+        algo = config.algo
 
-        config = config.algo
-        data_dim = config.data_dim
-        condition_dim = config.condition_dim
-        num_flow = config.num_flow
+        data_dim = algo.data_dim
+        condition_dim = algo.condition_dim
+        num_flow = algo.num_flow
 
         context_net = nn.Identity()
-        scale_fn_name = config.scale_fn_name
+        scale_fn_name = algo.scale_fn_name
 
         transforms = []
 
@@ -79,7 +79,12 @@ class FlowGraspNet(PLWrapper):
         loss = -logprob.mean()
         return loss, {"loss": loss}
 
-
+    def sample_grasp(self, num_samples, c=None):
+        return self.net.sample(num_samples, c)
+        
+    def grasp_latent(self, x, c):
+        x = torch_transquat2transrotvec(x)  # (B, 6)
+        return self.net(x, c)[0]
 """
 Code is Modified from SurVAE public code
 """
