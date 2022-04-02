@@ -116,7 +116,7 @@ class GraspEvaluation:
         '''
         df = pd.DataFrame()
         num_data = prior_z.shape[0]
-        for i in range(prior_z.shape[1]):
+        for i in range(prior_z.shape[1] + 1):
             if i == 0:
                 df["class"] = ["prior"] * num_data + ["grasp"] * num_data
             else:
