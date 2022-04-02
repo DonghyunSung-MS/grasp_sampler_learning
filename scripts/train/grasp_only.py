@@ -1,3 +1,7 @@
+import os
+
+os.environ["WANDB_API_KEY"] = "6325b41c1a09c4bc612dd4c50f5e3791dbb9eabe"
+
 from pathlib import Path
 
 import hydra
