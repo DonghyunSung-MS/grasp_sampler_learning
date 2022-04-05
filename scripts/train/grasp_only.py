@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from gsl import ROOT
 from gsl.dataset import GraspOnly, read_grasps
 from gsl.models import MODEL_ZOO
+from joblib.externals.loky.backend.context import get_context
 
 
 def seeding(seed):
@@ -30,12 +31,15 @@ def get_dataloader(config, object_name):
         batch_size=config.batch_size,
         num_workers=8,
         shuffle=True,
+        multiprocessing_context=get_context('loky')
     )
 
     val_loader = DataLoader(
         GraspOnly(evalset),
         batch_size=config.batch_size,
         num_workers=8,
+        multiprocessing_context=get_context('loky')
+
     )
 
     test_loader = DataLoader(
@@ -43,6 +47,7 @@ def get_dataloader(config, object_name):
         batch_size=config.batch_size,
         num_workers=8,
         shuffle=False,
+        multiprocessing_context=get_context('loky')
     )
 
     return train_loader, val_loader, test_loader
@@ -99,15 +104,16 @@ def train_each(config, object_name):
     trainer.fit(model, train_loader, val_loader)
 
     trainer.test(model, test_loader, ckpt_path="best")
-    wandb.finish()
+    # wandb.finish()
+    wandb.join()# move to wandb 0.9.7
 
 
 @hydra.main(config_path="../../config/", config_name="config")
 def main(config):
     print(OmegaConf.to_yaml(config))
-    # return
-    for object_name in config.object_names:
+    for object_name in config.object.object_names:
         print(object_name)
+        # continue
         train_each(config, object_name)
 
 if __name__ == "__main__":
