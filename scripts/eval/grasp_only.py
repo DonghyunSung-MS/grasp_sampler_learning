@@ -19,19 +19,22 @@ def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('model_dir', type=lambda p: Path(p).absolute())
     parser.add_argument('--num_sample', type=int, default=int(1e+4))
-    parser.add_argument('--trans_threshold', type=float, default=0.025) #m
-    parser.add_argument('--quat_threshold', type=float, default=np.pi/6.0) # rad
+    parser.add_argument('--trans_threshold', type=float, default=0.015) #15 mm
+    parser.add_argument('--quat_threshold', type=float, default=np.pi/180.0 * 1.0) # 1 deg
 
     parser.add_argument('--ds', action='store_true', help="data space visulization")
     parser.add_argument('--ls', action='store_true', help="latent space visulization")
-    
+    parser.add_argument('--q', action='store_true', help="compare precision coverage")
+
     args = parser.parse_args()
     return args
 
 
 def main():
     args = parser()
-
+    print(args.quat_threshold * 180.0 / np.pi)
+    print(args.trans_threshold)
+    # return
     seeds_model_ckpt = list(args.model_dir.glob("**/*.ckpt"))
     
     object_name = str(args.model_dir.parent.name)
@@ -51,7 +54,7 @@ def main():
 
         # Data sapce setup
         positive_grasps = None
-        if method == "VAE":
+        if method == "VAE" or method == "GAN":
             transrotmatflat = model.sample_grasp(args.num_sample, None)
             teye = torch.eye(4).unsqueeze(0).repeat(args.num_sample, 1, 1)
             teye[..., :3,  3] = transrotmatflat[:, :3]
@@ -71,11 +74,12 @@ def main():
 
 
         grasp_eval = GraspEvaluation(true_grasps, positive_grasps, args.trans_threshold, args.trans_threshold)
-
-        for percent in [0.001, 0.01, 0.1, 0.5, 1.0]:
-            num_samples, precision, coverage, exp_coverage= grasp_eval.pr_cov_expcov_k(percent)
-            data_row = [seed, num_samples, precision, coverage, exp_coverage]
-            quatitative_data.append(data_row)
+        if args.q:
+            print(f"{seed} precision converage analysis")
+            for percent in [0.001, 0.01, 0.1, 0.5, 1.0]:
+                num_samples, precision, coverage, exp_coverage= grasp_eval.pr_cov_expcov_k(percent)
+                data_row = [seed, num_samples, precision, coverage, exp_coverage]
+                quatitative_data.append(data_row)
 
         # latent space setup
         if args.ls:
@@ -85,11 +89,15 @@ def main():
 
         # visualize data space
         if args.ds:
-            grasp_eval.visualize_data_space(pv_mesh, pv_tex)
+            grasp_eval.visualize_data_space(pv_mesh, pv_tex, True)
+            assert args.num_sample <= 1000, "less than 1000 is recommanded for visualize rotation"
+            grasp_eval.visualize_data_space(pv_mesh, pv_tex, False)
+
 
     # store in csv at model_dir
-    quatitative_df = pd.DataFrame(quatitative_data, columns=["seed", "number of samples", "precision_rate (%)", "coverage_rate (%)", "exp_coverage"])
-    quatitative_df.to_csv(str(args.model_dir /"result.csv"))
+    if args.q:
+        quatitative_df = pd.DataFrame(quatitative_data, columns=["seed", "number of samples", "precision_rate (%)", "coverage_rate (%)", "exp_coverage"])
+        quatitative_df.to_csv(str(args.model_dir /"result.csv"))
 
 if __name__ == "__main__":
     main()

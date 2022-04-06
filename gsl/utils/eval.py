@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from PIL import Image
 import pyvista as pv
-from .geometry import Transform
+from .geometry import Transform, uniform_quaternion
 # =========================================================================
 EPS = 1e-7
 
@@ -68,19 +68,24 @@ class GraspEvaluation:
         
         self.trans_threshold = trans_threshold
         self.quat_threshold  = quat_threshold
+        self.w = 1000.0 * np.pi / 180.0 * 15 # 15mm == 1 deg
         
         true_xyz, true_qaut = true_grasp.as_xyzquat()
         posi_xyz, posi_quat = positive_grasp.as_xyzquat() # N_true x N_positive
+
+        # posi_quat = uniform_quaternion(posi_quat.shape[0])
 
         self.trans_cdist = cdist(true_xyz, posi_xyz, "euclidean")
         self.quat_cdist = cdist(true_qaut, posi_quat, "cosine") #1.0 - q1Tq2 
         self.quat_cdist = 2.0 * np.arccos(np.abs(self.quat_cdist - 1.0)) # 2*acros(|q1Tq2|)
 
+        self.true_grasp = true_grasp
+        self.positive_grasp = positive_grasp
         
-        #transquat to Tmatrix at grasp mount frame
-        to_grasp_mount = Transform.from_xyzquat(np.array([0, 0, -0.112, 0, 0, 0, 1.0]))
-        self.true_grasp = true_grasp * to_grasp_mount
-        self.positive_grasp = positive_grasp * to_grasp_mount
+        # transquat to Tmatrix at grasp mount frame
+        # to_grasp_mount = Transform.from_xyzquat(np.array([0, 0, -0.112, 0, 0, 0, 1.0]))
+        # self.true_grasp = true_grasp * to_grasp_mount
+        # self.positive_grasp = positive_grasp * to_grasp_mount
 
     ######################  Quantitative Study ###################################
     def get_k_percent_index(self, k):
@@ -98,13 +103,15 @@ class GraspEvaluation:
         # precision(higher better): N_true exitst in N_positive / N_positive
         # coverage (higher better) : N_positive exitst in N_true / N_true
         # expcov   (lower better) : exp( - mean( min (cdist))) cov3 in A Billion Ways to Grasp
-        dist = 0.1 * self.trans_cdist + self.quat_cdist
+        dist = self.w * self.trans_cdist + self.quat_cdist
         
         index, num_samples = self.get_k_percent_index(k)
-        self.trans_cdist[:, index] < self.trans_threshold
-        target_mat = (self.trans_cdist[:, index] < self.trans_threshold) * (self.quat_cdist[:, index] < self.quat_threshold)
+        # trans_bool = (self.trans_cdist[:, index] < self.trans_threshold)
+        # quat_bool = (self.quat_cdist[:, index] < self.quat_threshold)
+        # target_mat =  #trans_bool #* quat_bool
+        target_mat = dist[:, index] < self.w * self.trans_threshold + self.quat_threshold
 
-        return num_samples, np.mean(target_mat.any(0)), np.mean(target_mat.any(1)), np.exp(-np.mean(np.min(dist, 1)))
+        return num_samples, np.mean(target_mat.any(0)), np.mean(target_mat.any(1)), np.mean(np.min(dist[:, index], 1))
 
     ######################## Qualitative  Study ####################################
     def visualize_latent_space(self, prior_z, grasp_z, save_path:str=None):
