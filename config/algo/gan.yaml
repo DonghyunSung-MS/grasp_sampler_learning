@@ -1,0 +1,5 @@
+method: "GAN"
+# model parameters
+data_dim: 12
+condition_dim: 0
+latent_dim: 2
