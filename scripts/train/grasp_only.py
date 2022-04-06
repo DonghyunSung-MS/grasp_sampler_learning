@@ -1,6 +1,7 @@
 import os
 
 os.environ["WANDB_API_KEY"] = "6325b41c1a09c4bc612dd4c50f5e3791dbb9eabe"
+os.environ["WANDB_START_METHOD"] = "fork" # this is important to compatible with joblib loky backend
 
 from pathlib import Path
 
@@ -72,6 +73,11 @@ def get_logger_and_callbacks(config, object_name):
             ROOT
             / f"checkpoints/{object_name}/{config.method}_scale{config.scale_fn_name}_N{config.num_flow}/{seed}"
         )
+    elif config.method == "GAN":
+        dirpath = str(
+            ROOT
+            / f"checkpoints/{object_name}/{config.method}_z{config.latent_dim}/{seed}"
+        )
 
     callbacks = [
         ModelCheckpoint(
@@ -104,8 +110,7 @@ def train_each(config, object_name):
     trainer.fit(model, train_loader, val_loader)
 
     trainer.test(model, test_loader, ckpt_path="best")
-    # wandb.finish()
-    wandb.join()# move to wandb 0.9.7
+    wandb.finish() # for multiple run
 
 
 @hydra.main(config_path="../../config/", config_name="config")
