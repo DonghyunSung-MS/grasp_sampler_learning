@@ -22,7 +22,12 @@ class GANGraspNet(PLWrapper):
         self.save_hyperparameters()
 
     def forward(self, z, context):
-        return self.generator(z, context)
+        x_hat = self.generator(z, context)
+        t_hat = x_hat[..., :3]
+        R_hat = x_hat[..., 3:]
+        R_hat = roma.special_procrustes(R_hat.reshape(-1, 3, 3))
+        x_hat = torch.cat([t_hat, R_hat.reshape(-1, 9)], -1)
+        return x_hat
 
     def step_loss(self, batch_data, optimizer_idx=1):
         x = batch_data["x"]  # (B, 7) transquat
@@ -81,7 +86,7 @@ class GANGraspNet(PLWrapper):
     def sample_grasp(self, num_samples, c=None):
         z = self.base_dist.sample(num_samples)
         if c is None:
-            x_hat = self(z)
+            x_hat = self(z, c)
         else:
             assert num_samples == c.shape[0]
             x_hat = self(torch.cat([z, c], -1))

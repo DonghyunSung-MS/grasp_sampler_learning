@@ -62,7 +62,13 @@ class VAEGraspNet(PLWrapper):
             "recon": recon_loss,
         }
     def sample_grasp(self, num_samples, c=None):
-        return self.net.sample(num_samples, c)
+        x_hat = self.net.sample(num_samples, c)
+        t_hat = x_hat[..., :3]
+        R_hat = x_hat[..., 3:]
+        R_hat = roma.special_procrustes(R_hat.reshape(-1, 3, 3))
+        x_hat = torch.cat([t_hat, R_hat.reshape(-1, 9)], -1)
+        return x_hat
+
 
     def grasp_latent(self, x, c):
         R = roma.unitquat_to_rotmat(x[..., 3:])
