@@ -63,28 +63,39 @@ def get_logger_and_callbacks(config, object_name):
         name=object_name + config.method,
     )
     dirpath = None
+    model_ckpt = None
     if config.method == "VAE":
         dirpath = str(
             ROOT
             / f"checkpoints/{object_name}/{config.method}_z{config.latent_dim}_kl{config.beta}/{seed}"
+        )
+        model_ckpt = ModelCheckpoint(
+            dirpath=dirpath,
+            monitor="val/loss",
+            save_top_k=1,
         )
     elif config.method == "FLOW":
         dirpath = str(
             ROOT
             / f"checkpoints/{object_name}/{config.method}_scale{config.scale_fn_name}_N{config.num_flow}/{seed}"
         )
+        model_ckpt = ModelCheckpoint(
+            dirpath=dirpath,
+            monitor="val/loss",
+            save_top_k=1,
+        )
     elif config.method == "GAN":
         dirpath = str(
             ROOT
             / f"checkpoints/{object_name}/{config.method}_z{config.latent_dim}/{seed}"
         )
+        model_ckpt = ModelCheckpoint(
+            dirpath=dirpath,
+            save_last=True,
+        )
 
     callbacks = [
-        ModelCheckpoint(
-            dirpath=dirpath,
-            monitor="val/loss",
-            save_top_k=1,
-        ),
+        model_ckpt,
         LearningRateMonitor(),
     ]
 
