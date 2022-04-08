@@ -82,7 +82,7 @@ class RotAugCategoryGrasp(Dataset):
     cog centered grasp translation distribution with only positive grasp
     """
 
-    def __init__(self, grasps: List[np.array], rotrepr="qaut") -> None:
+    def __init__(self, grasps: List[np.array], rotrepr=None) -> None:
         # grasps List[np.array(N, 7)] xyz xyzw
 
         self.num_object = len(grasps)
@@ -127,6 +127,6 @@ class RotAugCategoryGrasp(Dataset):
             condition[obj_idx] = 1
 
         meta = dict()
-        meta["x"] = torch.from_numpy(self.datas[index]).float()
+        meta["x"] = torch.from_numpy(data).float()
         meta["c"] = torch.from_numpy(condition).float()
         return meta
