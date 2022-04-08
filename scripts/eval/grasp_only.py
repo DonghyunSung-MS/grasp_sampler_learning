@@ -32,8 +32,7 @@ def parser():
 
 def main():
     args = parser()
-    print(args.quat_threshold * 180.0 / np.pi)
-    print(args.trans_threshold)
+
     # return
     seeds_model_ckpt = list(args.model_dir.glob("**/*.ckpt"))
     
@@ -48,6 +47,7 @@ def main():
 
     # for each seed evaulate grasp
     for seed, model_ckpt in enumerate(seeds_model_ckpt):
+        print(model_ckpt.name)
         model = MODEL_ZOO[method].load_from_checkpoint(model_ckpt).cuda()
         model.eval()
 

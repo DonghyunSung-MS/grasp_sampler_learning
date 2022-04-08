@@ -8,7 +8,9 @@ from gsl import ROOT
 
 def parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('checkpoint_dir', type=lambda p: Path(p).absolute())    
+    parser.add_argument('checkpoint_dir', type=lambda p: Path(p).absolute())
+    parser.add_argument('--save', action='store_true', help="save plot")
+    
     args = parser.parse_args()
     return args
 
@@ -29,26 +31,38 @@ def main():
     # print(dfs)
     object_name = csvs[0].parent.parent.name
 
-    save_dir = ROOT / f"results/{object_name}/FLOW_VAE/"
+    save_dir = ROOT / f"results/{object_name}/FLOW_VAE_GAN/"
     if not save_dir.exists():
         save_dir.mkdir(parents=True)
 
     sns.lineplot(data=dfs, x="number of samples", y="coverage_rate (%)", hue="method")
-    plt.savefig(f"{save_dir}/cov_sample.png", dpi=300)
-    plt.cla()
+    if args.save:
+        plt.savefig(f"{save_dir}/cov_sample.png", dpi=300)
+        plt.cla()
+    else:
+        plt.show()
 
     sns.lineplot(data=dfs, x="number of samples", y="precision_rate (%)", hue="method")
-    plt.savefig(f"{save_dir}/pre_sample.png", dpi=300)
-    plt.cla()
-    
+    if args.save:
+        plt.savefig(f"{save_dir}/pre_sample.png", dpi=300)
+        plt.cla()
+    else:
+        plt.show()
+
     sns.lineplot(data=dfs, x="number of samples", y="exp_coverage", hue="method")
     plt.ylabel("average shortest path")
-    plt.savefig(f"{save_dir}/asp_sample.png", dpi=300)
-    plt.cla()
-    
+    if args.save:
+        plt.savefig(f"{save_dir}/asp_sample.png", dpi=300)
+        plt.cla()
+    else:
+        plt.show()
+
     sns.lineplot(data=dfs, x="coverage_rate (%)", y="precision_rate (%)", hue="method")
-    plt.savefig(f"{save_dir}/cov_pr.png", dpi=300)
-    plt.cla()
+    if args.save:
+        plt.savefig(f"{save_dir}/cov_pr.png", dpi=300)
+        plt.cla()
+    else:
+        plt.show()
     
 if __name__ == "__main__":
     main()

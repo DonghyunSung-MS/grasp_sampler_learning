@@ -89,9 +89,9 @@ def get_logger_and_callbacks(config, object_name):
             ROOT
             / f"checkpoints/{object_name}/{config.method}_z{config.latent_dim}/{seed}"
         )
+        # save lateset only
         model_ckpt = ModelCheckpoint(
             dirpath=dirpath,
-            save_last=True,
         )
 
     callbacks = [
