@@ -149,6 +149,8 @@ outputs/
 
 checkpoints/*
 !checkpoints/README.md
+checkpoints_backups
+
 
 data/*
 data/*
