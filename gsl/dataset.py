@@ -3,6 +3,7 @@ from typing import List
 
 import h5py
 import numpy as np
+
 # from sklearn.cluster import KMeans
 import pyvista as pv
 import torch
@@ -130,3 +131,31 @@ class RotAugCategoryGrasp(Dataset):
         meta["x"] = torch.from_numpy(data).float()
         meta["c"] = torch.from_numpy(condition).float()
         return meta
+
+
+if __name__ == "__main__":
+    object_names = [
+        "004_sugar_box",
+        "005_tomato_soup_can",
+        "006_mustard_bottle",
+        "024_bowl",
+        "025_mug",
+    ]
+
+    cpos = (0.5, 0.5, 0.5)
+    camera_location = {
+        "004_sugar_box": [cpos, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0)],
+        "005_tomato_soup_can": [cpos, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0)],
+        "006_mustard_bottle": [cpos, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0)],
+        "024_bowl": [cpos, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0)],
+        "025_mug": [cpos, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0)],
+    }
+
+    for object_name in object_names:
+        _, mesh, tex = read_all(object_name)
+
+        pl = pv.Plotter()
+        pl.camera_position = camera_location[object_name]
+        pl.add_axes_at_origin()
+        pl.add_mesh(mesh, texture=tex)
+        pl.show()

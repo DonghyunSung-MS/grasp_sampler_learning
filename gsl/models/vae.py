@@ -61,6 +61,7 @@ class VAEGraspNet(PLWrapper):
             "recon_rot": rot_recon,
             "recon": recon_loss,
         }
+
     def sample_grasp(self, num_samples, c=None):
         x_hat = self.net.sample(num_samples, c)
         t_hat = x_hat[..., :3]
@@ -69,13 +70,13 @@ class VAEGraspNet(PLWrapper):
         x_hat = torch.cat([t_hat, R_hat.reshape(-1, 9)], -1)
         return x_hat
 
-
     def grasp_latent(self, x, c):
         R = roma.unitquat_to_rotmat(x[..., 3:])
         t = x[..., :3]
         x = torch.cat([t, R.reshape(-1, 9)], -1)  # (B, 12)
-        
+
         return self.net.to_latent(x, c)
+
 
 class VAE(nn.Module):
     def __init__(self, data_dim, condition_dim, latent_dim) -> None:
@@ -112,7 +113,7 @@ class VAE(nn.Module):
         if context is None:
             x_hat = self.decoder(z)
         else:
-            assert num_samples.shape[0] == context.shape[0]
+            assert num_samples == context.shape[0]
             x_hat = self.decoder(torch.cat([z, context], -1))
         return x_hat
 
