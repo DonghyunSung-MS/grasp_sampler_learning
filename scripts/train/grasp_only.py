@@ -1,13 +1,16 @@
 import os
 
 os.environ["WANDB_API_KEY"] = "6325b41c1a09c4bc612dd4c50f5e3791dbb9eabe"
-os.environ["WANDB_START_METHOD"] = "fork" # this is important to compatible with joblib loky backend
+os.environ[
+    "WANDB_START_METHOD"
+] = "fork"  # this is important to compatible with joblib loky backend
 
 from pathlib import Path
 
 import hydra
 import pytorch_lightning as pl
 import wandb
+from joblib.externals.loky.backend.context import get_context
 from omegaconf import OmegaConf
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
@@ -16,7 +19,6 @@ from torch.utils.data import DataLoader
 from gsl import ROOT
 from gsl.dataset import GraspOnly, read_grasps
 from gsl.models import MODEL_ZOO
-from joblib.externals.loky.backend.context import get_context
 
 
 def seeding(seed):
@@ -25,22 +27,23 @@ def seeding(seed):
 
 def get_dataloader(config, object_name):
     grasp_path = ROOT / f"data/grasps/{object_name}/grasps.h5"
-    trainset, evalset, testset = read_grasps(grasp_path, config.num_train, config.num_test)
+    trainset, evalset, testset = read_grasps(
+        grasp_path, config.num_train, config.num_test
+    )
 
     train_loader = DataLoader(
         GraspOnly(trainset),
         batch_size=config.batch_size,
         num_workers=8,
         shuffle=True,
-        multiprocessing_context=get_context('loky')
+        multiprocessing_context=get_context("loky"),
     )
 
     val_loader = DataLoader(
         GraspOnly(evalset),
         batch_size=config.batch_size,
         num_workers=8,
-        multiprocessing_context=get_context('loky')
-
+        multiprocessing_context=get_context("loky"),
     )
 
     test_loader = DataLoader(
@@ -48,7 +51,7 @@ def get_dataloader(config, object_name):
         batch_size=config.batch_size,
         num_workers=8,
         shuffle=False,
-        multiprocessing_context=get_context('loky')
+        multiprocessing_context=get_context("loky"),
     )
 
     return train_loader, val_loader, test_loader
@@ -101,6 +104,7 @@ def get_logger_and_callbacks(config, object_name):
 
     return [wandb_logger], callbacks
 
+
 def train_each(config, object_name):
     seeding(config.seed)
 
@@ -121,7 +125,7 @@ def train_each(config, object_name):
     trainer.fit(model, train_loader, val_loader)
 
     trainer.test(model, test_loader, ckpt_path="best")
-    wandb.finish() # for multiple run
+    wandb.finish()  # for multiple run
 
 
 @hydra.main(config_path="../../config/", config_name="config")
@@ -131,6 +135,7 @@ def main(config):
         print(object_name)
         # continue
         train_each(config, object_name)
+
 
 if __name__ == "__main__":
     main()

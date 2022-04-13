@@ -10,7 +10,8 @@ from omegaconf import OmegaConf
 from .base import PLWrapper
 from .flow import StandardNormal
 
-#https://pytorch-lightning.readthedocs.io/en/stable/notebooks/lightning_examples/basic-gan.html
+
+# https://pytorch-lightning.readthedocs.io/en/stable/notebooks/lightning_examples/basic-gan.html
 class GANGraspNet(PLWrapper):
     def __init__(self, config: OmegaConf) -> None:
         super().__init__(config)
@@ -57,12 +58,13 @@ class GANGraspNet(PLWrapper):
 
             x_hat = self(z, c)
             d_out = self.discriminator(x_hat.detach(), c).squeeze(1)
-            fake_loss = nn.BCELoss()(d_out, torch.zeros(x.shape[0], device=d_out.device))
+            fake_loss = nn.BCELoss()(
+                d_out, torch.zeros(x.shape[0], device=d_out.device)
+            )
 
             loss = (real_loss + fake_loss) / 2.0
             log_dict = {"loss": loss}
 
-        
         return loss, log_dict
 
     # overwrite
@@ -74,7 +76,7 @@ class GANGraspNet(PLWrapper):
 
     def configure_optimizers(self):
         lr = self.config.lr
-        
+
         opt_g = torch.optim.Adam(self.generator.parameters(), lr=lr)
         opt_d = torch.optim.Adam(self.discriminator.parameters(), lr=lr)
 
@@ -93,10 +95,11 @@ class GANGraspNet(PLWrapper):
 
         return x_hat
 
+
 class Generator(nn.Module):
     def __init__(self, data_dim, condition_dim, latent_dim):
         super().__init__()
-        
+
         def block(in_feat, out_feat, normalize=True):
             layers = [nn.Linear(in_feat, out_feat)]
             if normalize:
@@ -116,6 +119,7 @@ class Generator(nn.Module):
         else:
             x_hat = self.model(torch.cat([z, context], -1))
         return x_hat
+
 
 class Discriminator(nn.Module):
     def __init__(self, data_dim, condition_dim):

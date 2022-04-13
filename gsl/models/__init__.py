@@ -1,9 +1,5 @@
 from .flow import FlowGraspNet
-from .vae import VAEGraspNet
 from .gan import GANGraspNet
+from .vae import VAEGraspNet
 
-MODEL_ZOO = {
-    "FLOW": FlowGraspNet,
-    "VAE": VAEGraspNet,
-    "GAN": GANGraspNet
-}
+MODEL_ZOO = {"FLOW": FlowGraspNet, "VAE": VAEGraspNet, "GAN": GANGraspNet}

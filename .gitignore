@@ -158,7 +158,7 @@ data/*
 !data/README.md
 
 results/*
-
+draft/
 *.pt
 *.png
 *.csv

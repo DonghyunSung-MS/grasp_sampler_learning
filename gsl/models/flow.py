@@ -81,10 +81,12 @@ class FlowGraspNet(PLWrapper):
 
     def sample_grasp(self, num_samples, c=None):
         return self.net.sample(num_samples, c)
-        
+
     def grasp_latent(self, x, c):
         x = torch_transquat2transrotvec(x)  # (B, 6)
         return self.net(x, c)[0]
+
+
 """
 Code is Modified from SurVAE public code
 """
