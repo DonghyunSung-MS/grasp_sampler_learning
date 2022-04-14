@@ -123,7 +123,7 @@ def main():
         grasp_eval.visualize_data_space(pv_mesh, pv_tex, False)
 
     if args.offscreen_save:
-        save_dir = ROOT / f"results/{object_name}/{method}"
+        save_dir = ROOT / f"results/{object_name}/{model_dir.name}"
         if not save_dir.exists():
             save_dir.mkdir(parents=True)
         grasp_eval.visualize_data_space(pv_mesh, pv_tex, True, save_dir)
