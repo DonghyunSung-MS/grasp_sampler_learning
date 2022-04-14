@@ -83,7 +83,7 @@ def main():
     if args.q:
         for seed in range(5):
             print(f"{seed} precision converage analysis")
-            for percent in np.linspace(0, 1.0, 50):
+            for percent in np.linspace(0, 1.0, 51):
                 (
                     num_samples,
                     precision,
@@ -123,7 +123,7 @@ def main():
         grasp_eval.visualize_data_space(pv_mesh, pv_tex, False)
 
     if args.offscreen_save:
-        save_dir = ROOT / f"results/{object_name}/{model_dir.name}"
+        save_dir = ROOT / f"results/{object_name}/{args.model_dir.name}"
         if not save_dir.exists():
             save_dir.mkdir(parents=True)
         grasp_eval.visualize_data_space(pv_mesh, pv_tex, True, save_dir)
